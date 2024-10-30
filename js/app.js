@@ -1,3 +1,4 @@
+let DB;
 
 const mascotaInput = document.querySelector('#mascota');
 const propietarioInput = document.querySelector('#propietario');
@@ -19,9 +20,15 @@ const heading = document.querySelector('#administra');
 
 let editando = false;
 
+window.onload = () => {
+    // console.log('Documento listo.');
+    eventListeners();
+
+    crearDB();
+}
 
 // Eventos
-eventListeners();
+
 function eventListeners() {
     mascotaInput.addEventListener('change', datosCita);
     propietarioInput.addEventListener('change', datosCita);
@@ -43,7 +50,7 @@ const citaObj = {
 
 function datosCita(e) {
     //  console.log(e.target.name) // Obtener el Input
-     citaObj[e.target.name] = e.target.value;
+    citaObj[e.target.name] = e.target.value;
 }
 
 // CLasses
@@ -76,9 +83,9 @@ class UI {
         
         // Si es de tipo error agrega una clase
         if(tipo === 'error') {
-             divMensaje.classList.add('alert-danger');
+            divMensaje.classList.add('alert-danger');
         } else {
-             divMensaje.classList.add('alert-success');
+            divMensaje.classList.add('alert-success');
         }
 
         // Mensaje de error
@@ -91,10 +98,10 @@ class UI {
         setTimeout( () => {
             divMensaje.remove();
         }, 3000);
-   }
+    }
 
    imprimirCitas({citas}) { // Se puede aplicar destructuring desde la función...
-       
+    
         this.limpiarHTML();
 
         this.textoHeading(citas);
@@ -151,9 +158,9 @@ class UI {
 
             contenedorCitas.appendChild(divCita);
         });    
-   }
+    }    
 
-   textoHeading(citas) {
+    textoHeading(citas) {
         if(citas.length > 0 ) {
             heading.textContent = 'Administra tus Citas '
         } else {
@@ -161,11 +168,11 @@ class UI {
         }
     }
 
-   limpiarHTML() {
+    limpiarHTML() {
         while(contenedorCitas.firstChild) {
             contenedorCitas.removeChild(contenedorCitas.firstChild);
         }
-   }
+    }
 }
 
 
@@ -262,4 +269,47 @@ function cargarEdicion(cita) {
 
     editando = true;
 
+}
+
+// Funcion para crear DB
+
+function crearDB(){
+    // Crear la base de datos en la version 1.0
+    const crearDB = window.indexedDB.open('citas',1);
+
+    // Si hay un error
+    crearDB.onerror = function(){
+        console.log('Hubo un error.');
+    }
+
+    crearDB.onsuccess = function(){
+        console.log('BD Creada correctamente.');
+
+        DB = crearDB.result;
+        
+        console.log(DB);
+        
+    }
+
+    // Definir el schema
+    crearDB.onupgradeneeded = function(e){
+        const db = e.target.result;
+
+        const objectStore = db.createObjectStore('citas', {
+            keyPath: 'id',
+            autoIncrement: true
+        });
+
+        // Definir todas las columnas
+        objectStore.createIndex('mascota','mascota', {unique:false});
+        objectStore.createIndex('propietario','propietario', {unique:false});
+        objectStore.createIndex('telefono','telefono', {unique:false});
+        objectStore.createIndex('fecha','fecha', {unique:false});
+        objectStore.createIndex('hora','hora', {unique:false});
+        objectStore.createIndex('sintomas','sintomas', {unique:false});
+        objectStore.createIndex('id','id', {unique:true});
+
+        console.log('DB creada y lista.');
+        
+    }
 }
